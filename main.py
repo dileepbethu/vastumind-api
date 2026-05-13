@@ -166,3 +166,30 @@ async def ask(q: Question):
         }
     except Exception as e:
         return JSONResponse({"error": str(e)}, status_code=500)
+
+
+# Add this at the bottom of main.py in GitHub
+import asyncio
+import httpx
+from contextlib import asynccontextmanager
+
+async def self_ping():
+    """Ping self every 14 minutes to prevent Render sleep"""
+    await asyncio.sleep(60)  # wait 1 min after startup
+    while True:
+        try:
+            async with httpx.AsyncClient() as client:
+                await client.get("https://vastumind-api.onrender.com/")
+                print("✅ Self-ping successful")
+        except:
+            pass
+        await asyncio.sleep(840)  # 14 minutes
+
+@asynccontextmanager
+async def lifespan(app):
+    # Start self-ping on startup
+    asyncio.create_task(self_ping())
+    yield
+
+# Update your app definition to use lifespan:
+app = FastAPI(title="VastuMind API", lifespan=lifespan)
