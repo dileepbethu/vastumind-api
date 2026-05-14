@@ -1,4 +1,3 @@
-
 import os
 import base64
 import asyncio
@@ -8,13 +7,14 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel
-import google.generativeai as genai
 from gtts import gTTS
 import httpx
+from google import genai
+from google.genai import types
 
 # ── Config ──
 GEMINI_API_KEY = os.environ.get("GEMINI_API_KEY", "")
-genai.configure(api_key=GEMINI_API_KEY)
+client = genai.Client(api_key=GEMINI_API_KEY)
 
 # ── Self-ping to prevent Render sleep ──
 async def self_ping():
@@ -153,8 +153,10 @@ ANSWER RULES:
 QUESTION: {question}
 ANSWER:"""
 
-    model = genai.GenerativeModel("gemini-2.5-flash")
-    response = model.generate_content(prompt)
+    response = client.models.generate_content(
+        model="gemini-2.5-flash",
+        contents=prompt
+    )
     answer = response.text.strip()
 
     updated_history = history + [
