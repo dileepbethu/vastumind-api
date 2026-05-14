@@ -114,7 +114,7 @@ def ask_gemini(element_id, question, history=[]):
         else "Reply in English ONLY. No Hindi words at all."
     )
 
-    history_text = " ".join([
+    history_text = "\n".join([
         f"{m['role'].upper()}: {m['content']}"
         for m in history
     ])
