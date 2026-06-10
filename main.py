@@ -222,6 +222,36 @@ async def ask(q: Question):
     except Exception as e:
         return JSONResponse({"error": str(e)}, status_code=500)
 
+
+@app.get("/ask_unreal")
+async def ask_unreal(
+    element_id: str = "tower_main",
+    question: str = "Tell me about this structure",
+    language: str = "en"
+):
+    try:
+        answer, updated_history = ask_gemini(
+            element_id,
+            question,
+            []  # fresh history each time
+        )
+        lang = detect_language(question)
+        audio = make_audio(
+            answer,
+            lang="hi" if lang == "Hindi" else "en"
+        )
+        return {
+            "answer": answer,
+            "audio_base64": audio,
+            "element_id": element_id,
+            "language": lang
+        }
+    except Exception as e:
+        return JSONResponse(
+            {"error": str(e)},
+            status_code=500
+        )
+
 @app.get("/health")
 def health():
     return {"status": "ok", "api": "vastumind-api.onrender.com"}
