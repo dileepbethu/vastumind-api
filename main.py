@@ -154,10 +154,8 @@ QUESTION: {question}
 ANSWER:"""
 
     response = client.models.generate_content(
-        model=["gemini-2.5-flash",
-               "gemini-2.0-flash",
-        "gemini-2.0-flash-lite",
-        "gemini-1.5-flash",]
+        model="gemini-2.5-flash",
+               
         contents=prompt
     )
     answer = response.text.strip()
@@ -166,28 +164,6 @@ ANSWER:"""
         {"role": "user", "content": question},
         {"role": "assistant", "content": answer}
     ]
-
-    last_error = None
-    for model_name in models_to_try:
-        try:
-            response = client.models.generate_content(
-                model=model_name,
-                contents=prompt
-            )
-            answer = response.text.strip()
-            updated_history = history + [
-                {"role": "user", "content": question},
-                {"role": "assistant", "content": answer}
-            ]
-            print(f"✅ Used model: {model_name}")
-            return answer, updated_history
-        except Exception as e:
-            print(f"❌ Model {model_name} failed: {e}")
-            last_error = e
-            continue
-
-    # All models failed
-    raise Exception(f"All models failed. Last error: {last_error}")
 
     return answer, updated_history
 
@@ -245,8 +221,6 @@ async def ask(q: Question):
             "language": lang
         }
     except Exception as e:
-        error_msg = str(e)
-        print(f"❌ /ask error: {error_msg}")
         return JSONResponse({"error": str(e)}, status_code=500)
 
 
