@@ -17,8 +17,6 @@ client = genai.Client(api_key=GEMINI_API_KEY)
 
 # ── Models to try in order (fallback chain) ──
 MODELS = [
-    "gemini-2.0-flash",
-    "gemini-2.0-flash-lite",
     "gemini-2.5-flash",
 ]
 
@@ -71,49 +69,79 @@ def detect_language(text):
     return "English"
 
 def ask_gemini(element_id, question, history=[]):
-    element = tower_knowledge["elements"].get(element_id, tower_knowledge["elements"]["tower_main"])
+    element = tower_knowledge["elements"].get(
+        element_id,
+        tower_knowledge["elements"]["tower_main"]
+    )
+
     lang = detect_language(question)
-    lang_rule = "Reply in Hindi ONLY." if lang == "Hindi" else "Reply in English ONLY. No Hindi words at all."
-    history_text = "\n".join([f"{m['role'].upper()}: {m['content']}" for m in history])
+    lang_rule = (
+        "Reply in Hindi ONLY."
+        if lang == "Hindi"
+        else "Reply in English ONLY. No Hindi words at all."
+    )
 
-    prompt = f"""You are an intelligent VR guide for the wooden structural tower model built by civil engineering students of Mahindra University, at CSIS Research Centre, Hyderabad.
+    history_text = "\n".join([
+        f"{m['role'].upper()}: {m['content']}"
+        for m in history
+    ])
 
-BUILDING DATA:
-- Name: {tower_knowledge['name']}
-- Built by: {tower_knowledge['about']['built_by']}
-- Location: {tower_knowledge['about']['location']}
-- Material: Wood (pine/plywood)
-- Structure: 4-storey lattice tower with X-bracing
+    prompt = f"""You are an intelligent VR/AR guide for the wooden structural 
+tower model built by civil engineering students of Mahindra University, 
+CSIS Research Centre, Hyderabad.
+
+ELEMENT: {element['name']}
+DETAILS: {element['description']}
+
+BUILDING:
+- 4-storey wooden lattice tower with X-bracing
 - Roof: Triangular pitched roof frame
 - Base: Wooden foundation plate
-- Special: Level 3 has wire mesh infill panel
+- Built by: Mahindra University students
 
-CURRENT ELEMENT:
-- Name: {element['name']}
-- Details: {element['description']}
-
-CONVERSATION SO FAR:
+CONVERSATION:
 {history_text}
 
 LANGUAGE RULE: {lang_rule}
-RULES: Max 3 sentences. Redirect off-topic to tower. Never make up facts.
+RULES: 
+- Max 3 clear sentences
+- Who are you → say you are the AI guide for this tower
+- Off-topic → say you specialize in this tower
+- Never make up facts
 
 QUESTION: {question}
 ANSWER:"""
 
+    import time
     last_error = None
-    for model_name in MODELS:
+    max_retries = 4
+
+    # Retry gemini-2.5-flash up to 4 times with increasing delay
+    for attempt in range(max_retries):
         try:
-            response = client.models.generate_content(model=model_name, contents=prompt)
+            print(f"Attempt {attempt + 1} with gemini-2.5-flash")
+            response = client.models.generate_content(
+                model="gemini-2.5-flash",
+                contents=prompt
+            )
             answer = response.text.strip()
-            print(f"✅ Used model: {model_name}")
-            updated_history = history + [{"role": "user", "content": question}, {"role": "assistant", "content": answer}]
-            return answer, updated_history
+            print(f"✅ Success on attempt {attempt + 1}")
+
+            updated_history = history + [
+                {"role": "user", "content": question},
+                {"role": "assistant", "content": answer}
+            ]
+            return answer, updated_history, "gemini-2.5-flash"
+
         except Exception as e:
-            print(f"⚠ Model {model_name} failed: {e}")
+            print(f"❌ Attempt {attempt + 1} failed: {str(e)[:150]}")
             last_error = e
+            if attempt < max_retries - 1:
+                wait_time = (attempt + 1) * 2  # 2s, 4s, 6s
+                time.sleep(wait_time)
             continue
 
+    raise Exception(f"All retries failed. Last: {str(last_error)[:200]}")
     fallback = "I am the AI guide for this structural tower at Mahindra University CSIS. The AI service is temporarily busy. Please try again in a moment."
     return fallback, history
 
