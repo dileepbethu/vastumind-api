@@ -114,37 +114,43 @@ ANSWER:"""
 
     import time
     last_error = None
-    max_retries = 4
 
-    # Retry gemini-2.5-flash up to 4 times with increasing delay
-    for attempt in range(max_retries):
+    # Try gemini-2.5-flash AND gemini-1.5-flash as real backup
+    models_to_try = ["gemini-2.5-flash", "gemini-1.5-flash", "gemini-2.5-flash"]
+
+    for attempt, model_name in enumerate(models_to_try):
         try:
-            print(f"Attempt {attempt + 1} with gemini-2.5-flash")
+            print(f"Attempt {attempt + 1} with {model_name}")
             response = client.models.generate_content(
-                model="gemini-2.5-flash",
+                model=model_name,
                 contents=prompt
             )
             answer = response.text.strip()
-            print(f"✅ Success on attempt {attempt + 1}")
+            print(f"✅ Success with {model_name}")
 
             updated_history = history + [
                 {"role": "user", "content": question},
                 {"role": "assistant", "content": answer}
             ]
-            return answer, updated_history, "gemini-2.5-flash"
+            return answer, updated_history
 
         except Exception as e:
-            print(f"❌ Attempt {attempt + 1} failed: {str(e)[:150]}")
+            print(f"❌ {model_name} failed: {str(e)[:150]}")
             last_error = e
-            if attempt < max_retries - 1:
-                wait_time = (attempt + 1) * 2  # 2s, 4s, 6s
-                time.sleep(wait_time)
+            time.sleep(3)  # wait 3 full seconds before next try
             continue
 
-    raise Exception(f"All retries failed. Last: {str(last_error)[:200]}")
-    fallback = "I am the AI guide for this structural tower at Mahindra University CSIS. The AI service is temporarily busy. Please try again in a moment."
-    return fallback, history
-
+    # All attempts genuinely failed — return graceful fallback
+    print(f"⚠️ All models failed, using fallback. Last error: {last_error}")
+    fallback_answer = (
+        "I am the AI guide for this structural tower at Mahindra University CSIS. "
+        "The AI service is experiencing high demand right now. Please try asking again in a few seconds."
+    )
+    updated_history = history + [
+        {"role": "user", "content": question},
+        {"role": "assistant", "content": fallback_answer}
+    ]
+    return fallback_answer, updated_history
 def make_audio(text, lang="en"):
     try:
         tts = gTTS(text=text, lang=lang, slow=False)
