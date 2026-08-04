@@ -176,8 +176,8 @@ Description:
 Knowledge:
 {annotation['knowledge']}
 """
-else:
-    annotation_context = ""
+    else:
+        annotation_context = ""
 
     lang = detect_language(question)
     lang_rule = (
