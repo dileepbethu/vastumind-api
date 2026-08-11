@@ -40,7 +40,7 @@ async def lifespan(app):
 app = FastAPI(title="VastuMind API", lifespan=lifespan)
 app.add_middleware(CORSMiddleware, allow_origins=["*"], allow_methods=["*"], allow_headers=["*"])
 
-tower_knowledge = {
+heritage_knowledge = {
   "temple": {
     "name": "Sri Ramalingeshwara Swamy Temple",
     "location": "Andhra Pradesh, India",
@@ -161,7 +161,7 @@ def detect_language(text):
     return "English"
 
 def ask_gemini(element_id, question, history=[]):
-    annotation = tower_knowledge.get("annotations", {}).get(element_id)
+    annotation = heritage_knowledge.get("annotations", {}).get(element_id)
 
     if annotation:    
         annotation_context = f"""
@@ -173,8 +173,23 @@ Title:
 Description:
 {annotation['description']}
 
-Knowledge:
-{annotation['knowledge']}
+Overview:
+{annotation['knowledge']['overview']}
+
+Architecture:
+{annotation['knowledge']['architecture']}
+
+Importance:
+{annotation['knowledge']['importance']}
+
+Engineering:
+{annotation['knowledge']['engineering']}
+
+History:
+{annotation['knowledge']['history']}
+
+Visitor Note:
+{annotation['knowledge']['visitor_note']}
 """
     else:
         annotation_context = ""
@@ -201,29 +216,45 @@ sculptures,
 pillars,
 and Hindu iconography.
 
-Only answer using the supplied knowledge base.
-If information is unavailable,
-say that it is not available in the current HeritageLens database.
+Instructions
+
+• You are HeritageLens AI, an intelligent museum and heritage guide.
+
+• Use the provided HeritageLens knowledge as the primary source when answering questions about this temple.
+
+• If the visitor asks broader questions about Indian history, temple architecture, archaeology, sculpture, conservation, structural engineering, or Hindu culture, you may answer using your general knowledge.
+
+• Clearly distinguish between information from the HeritageLens knowledge base and general historical knowledge whenever necessary.
+
+• Never invent facts specifically about Sri Ramalingeshwara Swamy Temple.
+
+• If you are genuinely uncertain about a temple-specific fact, say that the information is not currently available.
+
+• Reply in the same language used by the visitor whenever possible.
+
+• Explain naturally like an experienced museum guide.
+
+• Keep answers concise unless the visitor asks for more detail.
 
 TEMPLE KNOWLEDGE
 
 Temple:
-{tower_knowledge["temple"]}
+{heritage_knowledge["temple"]}
 
 History:
-{tower_knowledge["history"]}
+{heritage_knowledge["history"]}
 
 Architecture:
-{tower_knowledge["architecture"]}
+{heritage_knowledge["architecture"]}
 
 Pillar:
-{tower_knowledge["pillar"]}
+{heritage_knowledge["pillar"]}
 
 Sculptures:
-{tower_knowledge["sculptures"]}
+{heritage_knowledge["sculptures"]}
 
 Visitor Information:
-{tower_knowledge["visitor_information"]}
+{heritage_knowledge["visitor_information"]}
 {annotation_context}
 CONVERSATION:
 {history_text}
@@ -312,11 +343,11 @@ def root():
 @app.get("/temple")
 def get_temple():
     return {
-        "name": tower_knowledge["temple"]["name"],
-        "location": tower_knowledge["temple"]["location"],
-        "deity": tower_knowledge["temple"]["deity"],
-        "age": tower_knowledge["temple"]["estimated_age"],
-        "style": tower_knowledge["temple"]["architecture_style"]
+        "name": heritage_knowledge["temple"]["name"],
+        "location": heritage_knowledge["temple"]["location"],
+        "deity": heritage_knowledge["temple"]["deity"],
+        "age": heritage_knowledge["temple"]["estimated_age"],
+        "style": heritage_knowledge["temple"]["architecture_style"]
     }
 @app.post("/ask")
 async def ask(q: Question):
