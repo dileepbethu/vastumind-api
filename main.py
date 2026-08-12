@@ -43,12 +43,12 @@ app.add_middleware(CORSMiddleware, allow_origins=["*"], allow_methods=["*"], all
 heritage_knowledge = {
   "temple": {
     "name": "Sri Ramalingeshwara Swamy Temple",
-    "location": "Andhra Pradesh, India",
+    "location": "Nandikandi, Telangana, India",
     "deity": "Lord Shiva (Sri Ramalingeshwara Swamy)",
     "estimated_age": "Approximately 1000–1100 years",
     "architecture_style": "Kalyani Chalukya Period",
     "shape": "Padma (Lotus) and Nakshatra (Star) Layout",
-    "overview": "Sri Ramalingeshwara Swamy Temple is an ancient Shiva temple known for its remarkable stone architecture, intricate carvings, sculptured pillars, and historical significance. The temple preserves traditional South Indian temple architecture and contains numerous sculptures depicting Hindu deities and symbolic motifs."
+    "overview": "Chalukya Era Shri Ramalingeshwara Temple is an ancient Shiva temple known for its remarkable stone architecture, intricate carvings, sculptured pillars, and historical significance. The temple preserves traditional South Indian temple architecture and contains numerous sculptures depicting Hindu deities and symbolic motifs."
   },
 
   "history": {
@@ -230,8 +230,20 @@ Instructions
 
 • If you are genuinely uncertain about a temple-specific fact, say that the information is not currently available.
 
-• Reply in the same language used by the visitor whenever possible.
+Language Instructions
 
+• By default, reply in the same language used by the visitor.
+
+• If the visitor explicitly asks:
+  - "Explain in Hindi"
+  - "Answer in Hindi"
+  - "Explain in Telugu"
+  - "தமிழில் விளக்கவும்"
+  - "Explain in English"
+
+then respond completely in that requested language, regardless of the language of the question.
+
+• Continue using that language until the visitor requests another language.
 • Explain naturally like an experienced museum guide.
 
 • Keep answers concise unless the visitor asks for more detail.
