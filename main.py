@@ -190,6 +190,15 @@ History:
 
 Visitor Note:
 {annotation['knowledge']['visitor_note']}
+
+SPATIAL GROUNDING:
+The user is currently viewing and interacting with the specific 3D heritage element
+represented by this annotation.
+
+Treat this selected element as the user's current spatial focus.
+When the user uses words such as "this", "it", "this feature", or "here",
+interpret them as referring to this selected 3D element unless the user
+explicitly asks about the entire temple.
 """
     else:
         annotation_context = ""
