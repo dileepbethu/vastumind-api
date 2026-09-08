@@ -61,6 +61,65 @@ async def lifespan(app):
 # ============================================================
 # FASTAPI APP
 # ============================================================
+
+app = FastAPI(lifespan=lifespan)
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+# ============================================================
+# HERITAGE KNOWLEDGE BASE
+# ============================================================
+
+heritage_knowledge = {
+    # ========================================================
+    # TEMPLE
+    # ========================================================
+    "temple": {
+        "name": "Sri Ramalingeshwara Swamy Temple",
+        "location": "Unspecified location in India",
+        "deity": "Lord Shiva",
+        "estimated_age": "Medieval (e.g., 12th Century)",
+        "architecture_style": "Dravidian",
+        "shape": "Rectangular with multiple shrines",
+        "overview": "The Sri Ramalingeshwara Swamy Temple is an ancient temple dedicated to Lord Shiva, known for its intricate carvings and historical significance. It represents a significant example of Dravidian architecture."
+    },
+
+    # ========================================================
+    # HISTORY
+    # ========================================================
+    "history": {
+        "foundation": "Believed to be founded during the Chola dynasty.",
+        "invasions": "Survived multiple historical invasions, though some parts were damaged.",
+        "restoration": "Underwent various restoration efforts over centuries.",
+        "current_status": "Active place of worship and a heritage site."
+    },
+
+    # ========================================================
+    # ARCHITECTURE
+    # ========================================================
+    "architecture": {
+        "style": "Dravidian architecture, characterized by pyramidal towers (vimanas) and mandapams (halls).",
+        "materials": "Primarily constructed from granite and sandstone.",
+        "unique_features": "Includes a distinctive 'Padma and Nakshatra' layout, ornamental tiers, and miniature shrines."
+    },
+
+    # ========================================================
+    # PILLAR
+    # ========================================================
+    "pillar": {
+        "title": "Historic Temple Pillar",
+        "importance": "Crucial to the temple's structural integrity and aesthetic design.",
+        "description": "An elaborately carved stone pillar, featuring various deities, mythical creatures, and geometric patterns.",
+        "historical_significance": "Each carving tells a story from Hindu mythology or depicts daily life from the period of its creation.",
+        "engineering": "Showcases advanced ancient stone masonry techniques, including interlocking systems without mortar.",
+        "research_value": "Provides valuable insights into medieval craftsmanship, religious practices, and architectural engineering."
+    },
+
     # ========================================================
     # ANNOTATIONS
     # ========================================================
@@ -523,9 +582,55 @@ ANSWER:
     # ========================================================
     # GEMINI MODEL FALLBACK
     # ========================================================
+    # (Placeholder for Gemini model call logic, if any)
     # ========================================================
-    # FALLBACK
-    # ========================================================
+    model = client.get_model(MODELS[0])
+
+    # Ensure history is in the correct format for the model
+    model_history = []
+    for entry in history:
+        role = "user" if entry["role"] == "USER" else "model"
+        model_history.append(genai.types.contents.Content(role=role, parts=[entry["content"]]))
+
+    # Add the current question to the history for the generation call
+    model_history.append(genai.types.contents.Content(role="user", parts=[prompt]))
+
+    # Generate content using the Gemini model
+    response = model.generate_content(
+        contents=model_history
+    )
+
+    # Extract the answer from the response
+    answer = response.text.strip()
+
+    # Update history for the next turn
+    updated_history = history + [
+        {"role": "USER", "content": question},
+        {"role": "MODEL", "content": answer}
+    ]
+
+    return answer, updated_history
+
+
+# ============================================================
+# MAKE AUDIO
+# ============================================================
+
+def make_audio(text: str, lang: str = "en") -> str:
+    """Converts text to speech using gTTS and returns base64 encoded audio."""
+    try:
+        tts = gTTS(text=text, lang=lang)
+        with tempfile.NamedTemporaryFile(suffix=".mp3", delete=True) as fp:
+            tts.save(fp.name)
+            fp.seek(0) # Go to the beginning of the file
+            encoded_audio = base64.b64encode(fp.read()).decode("utf-8")
+        return encoded_audio
+    except Exception as e:
+        print(f"Error generating audio: {e}")
+        return ""
+
+
+# ============================================================
 # JSON QUESTION MODEL
 # ============================================================
 
