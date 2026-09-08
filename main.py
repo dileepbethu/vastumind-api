@@ -3,15 +3,12 @@ import base64
 import asyncio
 import tempfile
 import time
-
 from contextlib import asynccontextmanager
 
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
-
 from pydantic import BaseModel
-
 from gtts import gTTS
 import httpx
 
@@ -28,33 +25,28 @@ GEMINI_API_KEY = os.environ.get("GEMINI_API_KEY", "")
 client = genai.Client(api_key=GEMINI_API_KEY)
 
 
-# Models used by the existing AI system
+# ============================================================
+# MODELS
+# ============================================================
+
 MODELS = [
     "gemini-2.5-flash",
 ]
 
 
 # ============================================================
-# SELF PING
+# SELF-PING
 # ============================================================
 
 async def self_ping():
-
     await asyncio.sleep(60)
 
     while True:
-
         try:
-
             async with httpx.AsyncClient() as c:
-
-                await c.get(
-                    "https://vastumind-api.onrender.com/"
-                )
-
+                await c.get("https://vastumind-api.onrender.com/")
                 print("✅ Self-ping successful")
-
-        except Exception:
+        except:
             pass
 
         await asyncio.sleep(840)
@@ -62,224 +54,138 @@ async def self_ping():
 
 @asynccontextmanager
 async def lifespan(app):
-
     asyncio.create_task(self_ping())
-
     yield
 
 
-app = FastAPI(
-    title="VastuMind API",
-    lifespan=lifespan
-)
-
-
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["*"],
-    allow_methods=["*"],
-    allow_headers=["*"]
-)
-
-
 # ============================================================
-# HERITAGE KNOWLEDGE
+# FASTAPI APP
 # ============================================================
-
-heritage_knowledge = {
-
-    "temple": {
-
-        "name":
-        "Sri Ramalingeshwara Swamy Temple",
-
-        "location":
-        "Nandikandi, Telangana, India",
-
-        "deity":
-        "Lord Shiva (Sri Ramalingeshwara Swamy)",
-
-        "estimated_age":
-        "Approximately 1000–1100 years",
-
-        "architecture_style":
-        "Kalyani Chalukya Period",
-
-        "shape":
-        "Padma (Lotus) and Nakshatra (Star) Layout",
-
-        "overview":
-        "Chalukya Era Shri Ramalingeshwara Temple is an ancient Shiva temple known for its remarkable stone architecture, intricate carvings, sculptured pillars, and historical significance. The temple preserves traditional South Indian temple architecture and contains numerous sculptures depicting Hindu deities and symbolic motifs."
-    },
-
-
-    "history": {
-
-        "construction":
-        "According to local temple tradition, the temple was constructed during the Kalyani Chalukya period around one thousand years ago.",
-
-        "historical_events": [
-
-            "The temple experienced damage during invasions traditionally associated with the Mughal period under Aurangzeb.",
-
-            "Several sculptures and idols were damaged or removed.",
-
-            "Many recovered idols were later preserved by the Archaeological Department and local villagers.",
-
-            "Some original sculptures are now displayed in nearby temples and museums."
-
-        ]
-    },
-
-
-    "architecture": {
-
-        "layout":
-        "Padma and Nakshatra based temple planning.",
-
-        "makara_toranam": {
-
-            "description":
-            "The entrance contains a beautifully carved Makara Toranam.",
-
-            "symbolism":
-            "Six Rudra representations symbolize the six Indian seasons (Ritus)."
-        },
-
-        "special_features": [
-
-            "Highly detailed granite carvings",
-
-            "Mythological sculptures",
-
-            "Temple architectural blueprints carved into stone",
-
-            "Decorative floral motifs",
-
-            "Sacred geometric design"
-
-        ]
-    },
-
-
-    "pillar": {
-
-        "title":
-        "Historic Temple Pillar",
-
-        "importance":
-        "The sculptured pillar is considered one of the most important surviving architectural elements inside the temple.",
-
-        "description":
-        "The pillar contains detailed sculptures of Hindu deities, decorative carvings, symbolic motifs, miniature temple architecture and religious artwork carved directly into the granite.",
-
-        "historical_significance":
-        "According to local tradition, while several pillars inside the temple were damaged during historical invasions, this particular pillar remained largely intact and survives without major structural cracks.",
-
-        "engineering":
-        "The pillar demonstrates exceptional stone craftsmanship and structural stability despite its great age.",
-
-        "research_value":
-        "The pillar provides valuable information about medieval South Indian temple architecture, iconography, sculpture techniques and structural engineering."
-    },
-
+    # ========================================================
+    # ANNOTATIONS
+    # ========================================================
 
     "annotations": {
 
         "temple_blueprint": {
 
             "title":
-            "Temple Blueprint Sculpture",
+                "Temple Blueprint Sculpture",
 
             "description":
-            "Ancient Temple Blueprint",
+                "Ancient Temple Blueprint",
 
             "knowledge": {
 
                 "overview":
-                "This sculpture carved on the temple pillar represents the architectural blueprint of the Sri Ramalingeshwara Swamy Temple. Medieval temple builders carved miniature representations of the temple onto important pillars as both decoration and documentation.",
+                    "This sculpture carved on the temple pillar represents the architectural blueprint of the Sri Ramalingeshwara Swamy Temple. Medieval temple builders carved miniature representations of the temple onto important pillars as both decoration and documentation.",
 
                 "architecture":
-                "The sculpture represents the temple's Dravidian architecture with ornamental tiers, miniature shrines and symmetrical design inspired by the Padma and Nakshatra temple layout.",
+                    "The sculpture represents the temple's Dravidian architecture with ornamental tiers, miniature shrines and symmetrical design inspired by the Padma and Nakshatra temple layout.",
 
                 "importance":
-                "It preserves the architectural identity of the temple and demonstrates the exceptional craftsmanship of medieval stone sculptors.",
+                    "It preserves the architectural identity of the temple and demonstrates the exceptional craftsmanship of medieval stone sculptors.",
 
                 "engineering":
-                "The blueprint carving illustrates proportional temple planning and stone engineering techniques used during construction.",
+                    "The blueprint carving illustrates proportional temple planning and stone engineering techniques used during construction.",
 
                 "history":
-                "Although several sculptures inside the temple were damaged during historical invasions, this blueprint carving survived and continues to preserve valuable architectural information.",
+                    "Although several sculptures inside the temple were damaged during historical invasions, this blueprint carving survived and continues to preserve valuable architectural information.",
 
                 "visitor_note":
-                "Visitors are encouraged to closely observe the miniature temple carving because it closely resembles the actual temple structure."
+                    "Visitors are encouraged to closely observe the miniature temple carving because it closely resembles the actual temple structure."
             }
         }
     },
 
 
+    # ========================================================
+    # SCULPTURES
+    # ========================================================
+
     "sculptures": {
 
         "deities": [
-
             "Parvati",
-
             "Lord Shiva",
-
             "Various Hindu deities",
-
             "Guardian figures",
-
             "Sacred animals"
-
         ],
 
         "motifs": [
-
             "Floral carvings",
-
             "Temple miniature structures",
-
             "Mythological figures",
-
             "Sacred symbols"
-
         ]
     },
 
+
+    # ========================================================
+    # VISITOR INFORMATION
+    # ========================================================
 
     "visitor_information": {
 
         "main_attraction":
-        "The sculptured pillar is one of the primary attractions inside the temple because of its artistic, historical and engineering significance.",
+            "The sculptured pillar is one of the primary attractions inside the temple because of its artistic, historical and engineering significance.",
 
         "photography":
-        "Visitors often study and photograph the pillar because every side contains different carvings.",
+            "Visitors often study and photograph the pillar because every side contains different carvings.",
 
         "recommendation":
-        "Walk around all four sides of the pillar to observe different sculptures and architectural details."
+            "Walk around all four sides of the pillar to observe different sculptures and architectural details."
     },
 
+
+    # ========================================================
+    # AI CONTEXT
+    # ========================================================
 
     "ai_context": {
 
         "role":
-        "You are HeritageLens AI.",
+            "You are HeritageLens AI.",
 
         "behavior": [
-
             "Answer only using this temple information.",
-
             "Explain in simple English and if particularly asked in hindi.",
-
             "If asked about carvings, describe the sculptures visible on the pillar.",
-
             "If the user asks historical questions, answer using the history section.",
-
             "If the answer is unavailable, politely state that the available temple knowledge does not contain that information."
-
         ]
     }
+}
+
+
+# ============================================================
+# ELEMENT ID → KNOWLEDGE MAPPING
+# ============================================================
+#
+# Unreal sends IDs such as:
+#
+# pillar_02
+# pillar_03
+# pillar_04
+#
+# These IDs identify the actual 3D element.
+#
+# The mapping tells the AI which knowledge section belongs
+# to that element.
+#
+# Add more Unreal element IDs here as your project grows.
+# ============================================================
+
+ELEMENT_TO_KNOWLEDGE = {
+
+    "pillar_02": "pillar",
+    "pillar_03": "pillar",
+    "pillar_04": "pillar",
+
+    "temple_blueprint": "temple_blueprint",
+
+    "temple": "temple"
 }
 
 
@@ -295,30 +201,87 @@ def detect_language(text):
     )
 
     for char in text:
-
         if char in hindi_chars:
-
             return "Hindi"
 
     return "English"
 
 
 # ============================================================
-# EXISTING GEMINI QUESTION PROCESSING
+# GET ELEMENT CONTEXT
 # ============================================================
 
-def ask_gemini(element_id, question, history=[]):
+def get_element_context(element_id):
 
-    annotation = heritage_knowledge.get(
-        "annotations", {}
-    ).get(element_id)
+    # --------------------------------------------------------
+    # First check whether the Unreal ID has a mapping.
+    # --------------------------------------------------------
+
+    knowledge_key = ELEMENT_TO_KNOWLEDGE.get(element_id)
+
+    if knowledge_key == "pillar":
+
+        pillar = heritage_knowledge["pillar"]
+
+        return f"""
+CURRENT HERITAGE ELEMENT
+
+Element ID:
+{element_id}
+
+Element Type:
+Historic Temple Pillar
+
+Title:
+{pillar['title']}
+
+Importance:
+{pillar['importance']}
+
+Description:
+{pillar['description']}
+
+Historical Significance:
+{pillar['historical_significance']}
+
+Engineering:
+{pillar['engineering']}
+
+Research Value:
+{pillar['research_value']}
+
+SPATIAL GROUNDING:
+
+The user is currently viewing and interacting with the specific
+3D heritage element identified as {element_id}.
+
+This element is a historic temple pillar.
+
+When the user says:
+"this"
+"it"
+"this pillar"
+"this feature"
+"here"
+
+interpret those references as referring to the currently selected
+3D element unless the user explicitly asks about the entire temple.
+"""
 
 
-    if annotation:
+    # --------------------------------------------------------
+    # Temple blueprint annotation
+    # --------------------------------------------------------
 
-        annotation_context = f"""
+    if knowledge_key == "temple_blueprint":
 
-CURRENT ANNOTATION
+        annotation = heritage_knowledge["annotations"]["temple_blueprint"]
+
+        return f"""
+CURRENT HERITAGE ELEMENT
+
+Element ID:
+{element_id}
 
 Title:
 {annotation['title']}
@@ -346,85 +309,146 @@ Visitor Note:
 
 SPATIAL GROUNDING:
 
-The user is currently viewing and interacting with the specific
-3D heritage element represented by this annotation.
+The user is currently viewing and interacting with this specific
+3D heritage element.
 
-Treat this selected element as the user's current spatial focus.
+When the user says:
+"this"
+"it"
+"this feature"
+"here"
 
-When the user uses words such as "this", "it", "this feature",
-or "here", interpret them as referring to this selected 3D
-element unless the user explicitly asks about the entire temple.
-
+interpret those references as referring to this selected
+3D element unless the user explicitly asks about the entire temple.
 """
 
-    else:
 
-        annotation_context = ""
+    # --------------------------------------------------------
+    # Entire temple
+    # --------------------------------------------------------
 
+    if knowledge_key == "temple":
+
+        temple = heritage_knowledge["temple"]
+
+        return f"""
+CURRENT HERITAGE ELEMENT
+
+Element ID:
+{element_id}
+
+This selection refers to the overall temple structure.
+
+Temple:
+{temple['name']}
+
+Location:
+{temple['location']}
+
+Deity:
+{temple['deity']}
+
+Age:
+{temple['estimated_age']}
+
+Architecture:
+{temple['architecture_style']}
+
+Shape:
+{temple['shape']}
+
+Overview:
+{temple['overview']}
+"""
+
+
+    # --------------------------------------------------------
+    # Unknown element
+    # --------------------------------------------------------
+
+    return ""
+
+
+# ============================================================
+# GEMINI HERITAGE AI
+# ============================================================
+
+def ask_gemini(element_id, question, history=[]):
+
+    annotation_context = get_element_context(element_id)
 
     lang = detect_language(question)
 
-
     lang_rule = (
-
         "Reply in Hindi ONLY."
-
         if lang == "Hindi"
-
-        else
-
-        "Reply in English ONLY. No Hindi words at all."
-
+        else "Reply in English ONLY. No Hindi words at all."
     )
 
 
-    history_text = "\n".join(
+    # --------------------------------------------------------
+    # Conversation history
+    # --------------------------------------------------------
 
-        [
-            f"{m['role'].upper()}: {m['content']}"
-            for m in history
-        ]
+    history_text = "\n".join([
+        f"{m['role'].upper()}: {m['content']}"
+        for m in history
+    ])
 
-    )
 
+    # ========================================================
+    # PROMPT
+    # ========================================================
 
     prompt = f"""
 You are HeritageLens AI, an intelligent virtual guide for
 Sri Ramalingeshwara Swamy Temple.
 
-You help visitors understand the temple architecture,
-historical significance,
-stone carvings,
-sculptures,
-pillars,
-and Hindu iconography.
+You help visitors understand:
 
-Instructions
+- temple architecture
+- historical significance
+- stone carvings
+- sculptures
+- pillars
+- Hindu iconography
+
+
+INSTRUCTIONS
 
 • You are HeritageLens AI, an intelligent museum and heritage guide.
 
-• Use the provided HeritageLens knowledge as the primary source when answering questions about this temple.
+• Use the provided HeritageLens knowledge as the primary source
+  when answering questions about this temple.
 
-• If the visitor asks broader questions about Indian history, temple architecture, archaeology, sculpture, conservation, structural engineering, or Hindu culture, you may answer using your general knowledge.
+• If the visitor asks broader questions about Indian history,
+  temple architecture, archaeology, sculpture, conservation,
+  structural engineering, or Hindu culture, you may answer
+  using your general knowledge.
 
-• Clearly distinguish between information from the HeritageLens knowledge base and general historical knowledge whenever necessary.
+• Clearly distinguish between information from the HeritageLens
+  knowledge base and general historical knowledge whenever necessary.
 
 • Never invent facts specifically about Sri Ramalingeshwara Swamy Temple.
 
-• If you are genuinely uncertain about a temple-specific fact, say that the information is not currently available.
+• If you are genuinely uncertain about a temple-specific fact,
+  say that the information is not currently available.
 
-Language Instructions
+
+LANGUAGE INSTRUCTIONS
 
 • By default, reply in the same language used by the visitor.
 
 • If the visitor explicitly asks:
+
   - "Explain in Hindi"
   - "Answer in Hindi"
   - "Explain in Telugu"
   - "தமிழில் விளக்கவும்"
   - "Explain in English"
 
-then respond completely in that requested language.
+  then respond completely in that requested language,
+  regardless of the language of the question.
 
 • Continue using that language until the visitor requests another language.
 
@@ -432,7 +456,10 @@ then respond completely in that requested language.
 
 • Keep answers concise unless the visitor asks for more detail.
 
+
+============================================================
 TEMPLE KNOWLEDGE
+============================================================
 
 Temple:
 {heritage_knowledge["temple"]}
@@ -452,16 +479,27 @@ Sculptures:
 Visitor Information:
 {heritage_knowledge["visitor_information"]}
 
+
+============================================================
+CURRENT SPATIAL CONTEXT
+============================================================
+
 {annotation_context}
 
-CONVERSATION:
+
+============================================================
+CONVERSATION
+============================================================
 
 {history_text}
 
+
 LANGUAGE RULE:
+
 {lang_rule}
 
-RULES:
+
+RULES
 
 • Maximum 4 sentences.
 
@@ -469,8 +507,8 @@ RULES:
 
 • You are the virtual guide of Sri Ramalingeshwara Swamy Temple.
 
-• If the visitor asks about the current annotation,
-focus on that annotation.
+• If the visitor asks about the current selected element,
+  focus on that element.
 
 • Never invent facts.
 
@@ -482,151 +520,13 @@ ANSWER:
 """
 
 
-    last_error = None
-
-
-    models_to_try = [
-
-        "gemini-2.5-flash",
-
-        "gemini-1.5-flash",
-
-        "gemini-2.5-flash"
-
-    ]
-
-
-    for attempt, model_name in enumerate(models_to_try):
-
-        try:
-
-            print(
-                f"Attempt {attempt + 1} with {model_name}"
-            )
-
-
-            response = client.models.generate_content(
-
-                model=model_name,
-
-                contents=prompt
-
-            )
-
-
-            answer = response.text.strip()
-
-
-            print(
-                f"✅ Success with {model_name}"
-            )
-
-
-            updated_history = history + [
-
-                {
-                    "role": "user",
-                    "content": question
-                },
-
-                {
-                    "role": "assistant",
-                    "content": answer
-                }
-
-            ]
-
-
-            return answer, updated_history
-
-
-        except Exception as e:
-
-            print(
-                f"❌ {model_name} failed: {str(e)[:150]}"
-            )
-
-            last_error = e
-
-            time.sleep(3)
-
-            continue
-
-
-    print(
-        f"⚠️ All models failed, using fallback. "
-        f"Last error: {last_error}"
-    )
-
-
-    fallback_answer = (
-
-        "I am the AI guide for this structure. "
-
-        "The AI service is experiencing high demand right now. "
-
-        "Please try asking again in a few seconds."
-
-    )
-
-
-    updated_history = history + [
-
-        {
-            "role": "user",
-            "content": question
-        },
-
-        {
-            "role": "assistant",
-            "content": fallback_answer
-        }
-
-    ]
-
-
-    return fallback_answer, updated_history
-
-
-# ============================================================
-# TEXT TO SPEECH
-# ============================================================
-
-def make_audio(text, lang="en"):
-
-    try:
-
-        tts = gTTS(
-            text=text,
-            lang=lang,
-            slow=False
-        )
-
-
-        with tempfile.NamedTemporaryFile(
-            suffix=".mp3",
-            delete=False
-        ) as f:
-
-            tts.save(f.name)
-
-
-            with open(f.name, "rb") as audio:
-
-                return base64.b64encode(
-                    audio.read()
-                ).decode()
-
-
-    except Exception as e:
-
-        print(f"TTS error: {e}")
-
-        return ""
-
-
-# ============================================================
-# EXISTING QUESTION MODEL
+    # ========================================================
+    # GEMINI MODEL FALLBACK
+    # ========================================================
+    # ========================================================
+    # FALLBACK
+    # ========================================================
+# JSON QUESTION MODEL
 # ============================================================
 
 class Question(BaseModel):
@@ -646,21 +546,14 @@ class Question(BaseModel):
 def root():
 
     return {
-
-        "status":
-        "HeritageLens API Running",
-
-        "model":
-        "Gemini 2.5 Flash",
-
-        "temple":
-        "Sri Ramalingeshwara Swamy Temple"
-
+        "status": "HeritageLens API Running",
+        "model": "Gemini 2.5 Flash",
+        "temple": "Sri Ramalingeshwara Swamy Temple"
     }
 
 
 # ============================================================
-# TEMPLE
+# TEMPLE INFO
 # ============================================================
 
 @app.get("/temple")
@@ -669,208 +562,123 @@ def get_temple():
     return {
 
         "name":
-        heritage_knowledge["temple"]["name"],
+            heritage_knowledge["temple"]["name"],
 
         "location":
-        heritage_knowledge["temple"]["location"],
+            heritage_knowledge["temple"]["location"],
 
         "deity":
-        heritage_knowledge["temple"]["deity"],
+            heritage_knowledge["temple"]["deity"],
 
         "age":
-        heritage_knowledge["temple"]["estimated_age"],
+            heritage_knowledge["temple"]["estimated_age"],
 
         "style":
-        heritage_knowledge["temple"]["architecture_style"]
-
+            heritage_knowledge["temple"]["architecture_style"]
     }
 
 
 # ============================================================
-# EXISTING TEXT / ASK ENDPOINT
-# ============================================================
-
-@app.post("/ask")
-async def ask(q: Question):
-
-    try:
-
-        answer, updated_history = ask_gemini(
-            q.element_id,
-            q.question,
-            q.history
-        )
-
-
-        lang = detect_language(q.question)
-
-
-        audio = make_audio(
-            answer,
-            lang="hi" if lang == "Hindi" else "en"
-        )
-
-
-        return {
-
-            "answer":
-            answer,
-
-            "audio_base64":
-            audio,
-
-            "element_id":
-            q.element_id,
-
-            "history":
-            updated_history,
-
-            "language":
-            lang
-
-        }
-
-
-    except Exception as e:
-
-        return JSONResponse(
-            {
-                "error": str(e)
-            },
-            status_code=500
-        )
-
-
-# ============================================================
-# NEW VOICE QUERY ENDPOINT
+# EXISTING JSON /ask ENDPOINT
+#
+# Unreal sends:
+#
+# POST /voice-query
+#
+# Content-Type: audio/wav
+#
+# X-Heritage-Element-ID: pillar_02
+#
+# [RAW WAV DATA]
+#
 # ============================================================
 
 @app.post("/voice-query")
 async def voice_query(request: Request):
 
-    """
-    Receives raw WAV audio from Unreal.
-
-    Expected:
-
-        Content-Type:
-            audio/wav
-
-        Header:
-            X-Heritage-Element-ID: pillar_02
-
-        Body:
-            raw WAV bytes
-    """
-
     try:
 
-        # ----------------------------------------------------
-        # 1. Read element ID from Unreal
-        # ----------------------------------------------------
+        # ====================================================
+        # 1. GET ELEMENT ID FROM HEADER
+        # ====================================================
 
         element_id = request.headers.get(
-            "X-Heritage-Element-ID"
-        )
-
-
-        if not element_id:
-
-            return JSONResponse(
-
-                {
-                    "error":
-                    "Missing X-Heritage-Element-ID"
-                },
-
-                status_code=400
-
-            )
-
-
-        # ----------------------------------------------------
-        # 2. Read raw WAV body
-        # ----------------------------------------------------
-
-        audio_data = await request.body()
-
-
-        if not audio_data:
-
-            return JSONResponse(
-
-                {
-                    "error":
-                    "No audio data received"
-                },
-
-                status_code=400
-
-            )
+            "X-Heritage-Element-ID",
+            "temple"
+        ).strip()
 
 
         print(
-            f"🎙 Received voice query: "
-            f"{len(audio_data)} bytes"
+            f"🎯 Voice query element ID: {element_id}"
         )
+
+
+        # ====================================================
+        # 2. READ RAW WAV DATA
+        # ====================================================
+
+        audio_bytes = await request.body()
+
 
         print(
-            f"📍 Element ID: {element_id}"
+            f"🎤 Received audio bytes: "
+            f"{len(audio_bytes)}"
         )
 
 
-        # ----------------------------------------------------
-        # 3. Basic WAV validation
-        # ----------------------------------------------------
+        # ====================================================
+        # 3. VALIDATE AUDIO
+        # ====================================================
 
-        if not audio_data.startswith(b"RIFF"):
+        if not audio_bytes:
 
             return JSONResponse(
-
                 {
                     "error":
-                    "Received audio does not appear to be a valid WAV file"
+                        "No audio data received."
                 },
-
                 status_code=400
-
             )
 
 
-        # ----------------------------------------------------
-        # 4. Speech-to-text using Gemini audio understanding
-        # ----------------------------------------------------
+        # Basic WAV validation
+
+        if not audio_bytes.startswith(b"RIFF"):
+
+            return JSONResponse(
+                {
+                    "error":
+                        "Invalid WAV audio. "
+                        "Expected RIFF WAV data."
+                },
+                status_code=400
+            )
+
+
+        # ====================================================
+        # 4. SEND AUDIO TO GEMINI FOR TRANSCRIPTION
+        # ====================================================
+
+        print(
+            "🎧 Sending WAV audio to Gemini..."
+        )
+
 
         transcription_prompt = """
+Listen carefully to this audio recording.
 
-Transcribe the visitor's spoken question exactly.
+Transcribe exactly what the visitor said.
 
-Return ONLY the spoken question as plain text.
+Return ONLY the spoken question.
 
-Do not add:
-- explanations
-- quotation marks
-- labels
-- summaries
-- commentary
+Do not explain the question.
+Do not answer the question.
+Do not add quotation marks.
+Do not add commentary.
 
-If the visitor says something like:
-"Tell me about this pillar"
-
-return:
-
-Tell me about this pillar
-
+If the visitor speaks in Hindi, return the Hindi transcription.
+If the visitor speaks in English, return the English transcription.
 """
-
-
-        audio_part = types.Part.from_bytes(
-
-            data=audio_data,
-
-            mime_type="audio/wav"
-
-        )
 
 
         transcription_response = client.models.generate_content(
@@ -878,93 +686,103 @@ Tell me about this pillar
             model="gemini-2.5-flash",
 
             contents=[
-
                 transcription_prompt,
 
-                audio_part
-
+                types.Part.from_bytes(
+                    data=audio_bytes,
+                    mime_type="audio/wav"
+                )
             ]
-
         )
 
 
         question = transcription_response.text.strip()
 
 
+        print(
+            f"📝 Transcribed question: {question}"
+        )
+
+
+        # ====================================================
+        # 5. VALIDATE TRANSCRIPTION
+        # ====================================================
+
         if not question:
 
             return JSONResponse(
-
                 {
                     "error":
-                    "Speech-to-text returned an empty question"
+                        "Could not understand the audio."
                 },
-
-                status_code=422
-
+                status_code=400
             )
 
 
+        # ====================================================
+        # 6. SEND QUESTION + ELEMENT ID TO HERITAGE AI
+        # ====================================================
+
         print(
-            f"🗣 Transcribed question: {question}"
+            f"🧠 Asking HeritageLens AI..."
         )
 
+        print(
+            f"   Element: {element_id}"
+        )
 
-        # ----------------------------------------------------
-        # 5. Send transcription into existing AI pipeline
-        # ----------------------------------------------------
+        print(
+            f"   Question: {question}"
+        )
+
 
         answer, updated_history = ask_gemini(
-
             element_id,
-
             question,
-
             []
-
         )
 
 
-        # ----------------------------------------------------
-        # 6. Generate optional response audio
-        # ----------------------------------------------------
+        # ====================================================
+        # 7. DETECT LANGUAGE
+        # ====================================================
 
         lang = detect_language(question)
 
 
+        # ====================================================
+        # 8. GENERATE AI VOICE
+        # ====================================================
+
         audio = make_audio(
-
             answer,
-
             lang="hi" if lang == "Hindi" else "en"
-
         )
 
 
-        # ----------------------------------------------------
-        # 7. Return response to Unreal
-        # ----------------------------------------------------
+        # ====================================================
+        # 9. RETURN RESPONSE TO UNREAL
+        # ====================================================
 
         return {
 
             "question":
-            question,
+                question,
 
             "answer":
-            answer,
+                answer,
 
             "audio_base64":
-            audio,
+                audio,
 
             "element_id":
-            element_id,
+                element_id,
 
             "history":
-            updated_history,
+                updated_history,
 
             "language":
-            lang
-
+                lang
         }
 
 
@@ -979,38 +797,30 @@ Tell me about this pillar
 
             {
                 "error":
-                str(e)
+                    str(e)
             },
 
             status_code=500
-
         )
 
 
 # ============================================================
-# UNREAL TEXT ENDPOINT
+# EXISTING UNREAL GET ENDPOINT
+
 # ============================================================
 
 @app.get("/ask_unreal")
 async def ask_unreal(
-
     element_id: str = "temple",
-
-    question: str =
-    "Tell me about this structure"
-
+    question: str = "Tell me about this structure"
 ):
 
     try:
 
         answer, _ = ask_gemini(
-
             element_id,
-
             question,
-
             []
-
         )
 
 
@@ -1018,46 +828,40 @@ async def ask_unreal(
 
 
         audio = make_audio(
-
             answer,
-
             lang="hi" if lang == "Hindi" else "en"
-
         )
 
 
         return {
 
             "answer":
-            answer,
+                answer,
 
             "audio_base64":
-            audio,
+                audio,
 
             "element_id":
-            element_id,
+                element_id,
 
             "language":
-            lang
-
+                lang
         }
 
 
     except Exception as e:
 
         return JSONResponse(
-
             {
                 "error": str(e)
             },
-
             status_code=500
-
         )
 
 
 # ============================================================
-# HEALTH
+# HEALTH CHECK
+
 # ============================================================
 
 @app.get("/health")
@@ -1065,13 +869,11 @@ def health():
 
     return {
 
-        "status":
-        "ok",
+        "status": "ok",
 
         "api":
-        "vastumind-api.onrender.com",
+            "vastumind-api.onrender.com",
 
         "models":
-        MODELS
-
+            MODELS
     }
