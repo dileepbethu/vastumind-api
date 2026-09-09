@@ -432,7 +432,10 @@ Overview:
 # GEMINI HERITAGE AI
 # ============================================================
 
-def ask_gemini(element_id, question, history=[]):
+def ask_gemini(element_id, question, history=None):
+
+    if history is None:
+        history = []
 
     annotation_context = get_element_context(element_id)
 
@@ -580,28 +583,20 @@ ANSWER:
 
 
     # ========================================================
-    # GEMINI MODEL FALLBACK
+    # GEMINI RESPONSE GENERATION
     # ========================================================
-    # (Placeholder for Gemini model call logic, if any)
+    # google-genai 2.x uses client.models.generate_content().
     # ========================================================
-    model = client.get_model(MODELS[0])
 
-    # Ensure history is in the correct format for the model
-    model_history = []
-    for entry in history:
-        role = "user" if entry["role"] == "USER" else "model"
-        model_history.append(genai.types.contents.Content(role=role, parts=[entry["content"]]))
-
-    # Add the current question to the history for the generation call
-    model_history.append(genai.types.contents.Content(role="user", parts=[prompt]))
-
-    # Generate content using the Gemini model
-    response = model.generate_content(
-        contents=model_history
+    response = client.models.generate_content(
+        model=MODELS[0],
+        contents=prompt
     )
 
-    # Extract the answer from the response
-    answer = response.text.strip()
+    answer = (response.text or "").strip()
+
+    if not answer:
+        answer = "I could not generate an answer for that question."
 
     # Update history for the next turn
     updated_history = history + [
@@ -646,6 +641,11 @@ class Question(BaseModel):
 # ============================================================
 # ROOT
 # ============================================================
+
+@app.head("/")
+def root_head():
+    return None
+
 
 @app.get("/")
 def root():
@@ -697,6 +697,42 @@ def get_temple():
 # [RAW WAV DATA]
 #
 # ============================================================
+
+@app.post("/ask")
+async def ask_endpoint(payload: Question):
+    try:
+        print("🧠 JSON question received")
+        print(f"   Element: {payload.element_id}")
+        print(f"   Question: {payload.question}")
+
+        answer, updated_history = await asyncio.to_thread(
+            ask_gemini,
+            payload.element_id,
+            payload.question,
+            payload.history
+        )
+
+        lang = detect_language(payload.question)
+
+        audio = await asyncio.to_thread(
+            make_audio,
+            answer,
+            "hi" if lang == "Hindi" else "en"
+        )
+
+        return {
+            "question": payload.question,
+            "answer": answer,
+            "audio_base64": audio,
+            "element_id": payload.element_id,
+            "history": updated_history,
+            "language": lang
+        }
+
+    except Exception as e:
+        print(f"❌ JSON /ask error: {str(e)}")
+        return JSONResponse({"error": str(e)}, status_code=500)
+
 
 @app.post("/voice-query")
 async def voice_query(request: Request):
@@ -786,13 +822,11 @@ If the visitor speaks in English, return the English transcription.
 """
 
 
-        transcription_response = client.models.generate_content(
-
-            model="gemini-2.5-flash",
-
+        transcription_response = await asyncio.to_thread(
+            client.models.generate_content,
+            model=MODELS[0],
             contents=[
                 transcription_prompt,
-
                 types.Part.from_bytes(
                     data=audio_bytes,
                     mime_type="audio/wav"
@@ -841,7 +875,8 @@ If the visitor speaks in English, return the English transcription.
         )
 
 
-        answer, updated_history = ask_gemini(
+        answer, updated_history = await asyncio.to_thread(
+            ask_gemini,
             element_id,
             question,
             []
@@ -859,9 +894,10 @@ If the visitor speaks in English, return the English transcription.
         # 8. GENERATE AI VOICE
         # ====================================================
 
-        audio = make_audio(
+        audio = await asyncio.to_thread(
+            make_audio,
             answer,
-            lang="hi" if lang == "Hindi" else "en"
+            "hi" if lang == "Hindi" else "en"
         )
 
 
@@ -932,9 +968,10 @@ async def ask_unreal(
         lang = detect_language(question)
 
 
-        audio = make_audio(
+        audio = await asyncio.to_thread(
+            make_audio,
             answer,
-            lang="hi" if lang == "Hindi" else "en"
+            "hi" if lang == "Hindi" else "en"
         )
 
 
