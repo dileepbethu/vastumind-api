@@ -982,3 +982,15 @@ def health():
         "models":
             MODELS
     }
+
+
+#================================================================================
+@app.get("/routes")
+def routes():
+    return [
+        {
+            "path": route.path,
+            "methods": list(route.methods or [])
+        }
+        for route in app.routes
+    ]
